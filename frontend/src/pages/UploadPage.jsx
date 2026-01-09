@@ -3,77 +3,127 @@ import { db } from '../config/firebase.js';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+const gemUrl = process.env.REACT_APP_GEMINI_API_KEY;
+
 const UploadPage = () => {
   const [text, setText] = useState('');
+  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ⚠️ MVP WARNING: In production, call Gemini from a backend (Cloud Function) 
-  // to keep your API Key hidden. For a local MVP, this works:
-  const genAI = new GoogleGenerativeAI("AIzaSyAo-ZHJgu5Vc-rQr5nOB99bZ7bUNw6GS_I");
+  // Initialize Gemini with your API Key
+  console.log(gemUrl);
+  const genAI = new GoogleGenerativeAI(gemUrl);
+
+  // Helper to convert file to generative part (base64)
+  const fileToGenerativePart = async (file) => {
+    const base64EncodedDataPromise = new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]);
+      reader.readAsDataURL(file);
+    });
+    return {
+      inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+    };
+  };
 
   const handleDecode = async () => {
-    if (!text.trim()) return;
-    setLoading(true);
+  if (!text.trim() && !file) return;
+  setLoading(true);
 
+  // Helper function for a "sleep" delay
+  const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+  const runAITransformation = async (attempt = 1) => {
     try {
-      // 1. Initialize Gemini
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+      const prompt = `Act as a Product Architect. Analyze the provided patent text or image.
+Output ONLY a JSON object with the following structure:
 
-      // 2. The "Product Architect" Prompt
-      const prompt = `
-        Act as a World-Class Product Architect. I will provide a patent description. 
-        Ignore the legal jargon and identify the core engineering secret.
-        
-        Output strictly in this JSON format:
-        {
-          "title": "Short catchy product-focused title",
-          "summary": "One sentence simplified explanation of the tech",
-          "ideas": ["Idea 1", "Idea 2", "Idea 3"],
-          "difficulty": integer between 1 and 10
-        }
+{
+  "title": "A professional, high-level marketing name for the invention",
+  "difficulty": "X/10",
+  "summary": "A single detailed paragraph explaining how the technology works and its core utility.",
+  "ideas": [
+    "Product Name 1: A description of a real-world use case or specific product application.",
+    "Product Name 2: A description of a second real-world use case or specific product application.",
+    "Product Name 3: A description of a third real-world use case or specific product application."
+  ]
+}
 
-        Patent text: ${text}
-      `;
+Instructions:
+1. The 'difficulty' should be an estimate (e.g., 8/10) but should be a number eg(8).
+2. The 'ideas' array MUST contain exactly 3 items.
+3. Each idea must follow the format 'Product Name: Description'.
+4. Do not include markdown formatting like \`\`\`json.`;
 
-      // 3. Get AI Response
-      const result = await model.generateContent(prompt);
+      let result;
+      if (file) {
+        const imagePart = await fileToGenerativePart(file);
+        result = await model.generateContent([prompt, text, imagePart]);
+      } else {
+        result = await model.generateContent(prompt + ` Text: ${text}`);
+      }
+
       const response = await result.response;
-      const cleanJson = JSON.parse(response.text().replace(/```json|```/g, ""));
-
-      // 4. Save to Firestore
-      await addDoc(collection(db, "patents"), {
-        ...cleanJson,
-        score: 0,
-        upvotes: 0,
-        downvotes: 0,
-        createdAt: serverTimestamp(),
-        rawText: text // Optional: keep for reference
-      });
-
-      alert("Patent Rescued! It's now live in the gallery.");
-      setText('');
+      return JSON.parse(response.text().replace(/```json|```/g, ""));
     } catch (error) {
-      console.error("AI Transformation Error:", error);
-      alert("Failed to decode. Ensure your API key is correct.");
-    } finally {
-      setLoading(false);
+      // If error is 503 (Overloaded) and we haven't retried yet
+      if (error.message.includes("503") && attempt < 2) {
+        console.log("Model overloaded. Retrying in 3 seconds...");
+        await delay(3000);
+        return runAITransformation(attempt + 1);
+      }
+      throw error; // If it fails again or isn't a 503, throw the error
     }
   };
+
+  try {
+    const cleanJson = await runAITransformation();
+
+    await addDoc(collection(db, "patents"), {
+      ...cleanJson,
+      score: 0,
+      upvotes: 0,
+      downvotes: 0,
+      createdAt: serverTimestamp(),
+      rawText: text || "Uploaded via File"
+    });
+
+    alert("Patent Rescued!");
+    setText('');
+    setFile(null);
+  } catch (error) {
+    console.error("Final AI Error:", error);
+    alert("The AI server is very busy right now. Please wait a minute and try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="upload-section" style={{ background: '#1e293b', padding: '2rem', borderRadius: '12px' }}>
       <h2 style={{ color: 'white' }}>Rescue an Invention</h2>
-      <p style={{ color: '#94a3b8' }}>Paste the patent abstract below. Our AI will decode it into a product blueprint.</p>
+      <p style={{ color: '#94a3b8' }}>Paste text OR upload an image/PDF of the patent blueprint.</p>
       
       <textarea 
         style={{ 
-          width: '100%', height: '150px', background: '#0f172a', color: 'white', 
+          width: '100%', height: '120px', background: '#0f172a', color: 'white', 
           border: '1px solid #334155', borderRadius: '8px', padding: '1rem', margin: '1rem 0' 
         }}
-        placeholder="Paste 'Legalese' (Abstract or Description) here..."
+        placeholder="Paste text here..."
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
+
+      <div style={{ marginBottom: '1.5rem' }}>
+        <input 
+          type="file" 
+          accept="image/*,application/pdf"
+          onChange={(e) => setFile(e.target.files[0])}
+          style={{ color: '#94a3b8', fontSize: '0.9rem' }}
+        />
+        {file && <p style={{ color: '#4ade80', fontSize: '0.8rem' }}>File selected: {file.name}</p>}
+      </div>
       
       <button 
         className="btn-primary" 
@@ -84,7 +134,7 @@ const UploadPage = () => {
           border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' 
         }}
       >
-        {loading ? "AI is Decoding Secrets..." : "Transform Patent"}
+        {loading ? "AI is Decoding..." : "Transform Patent"}
       </button>
     </div>
   );
