@@ -1,38 +1,52 @@
-/* styles.css */
-
-/* --- 1. Global Space Theme & Typography --- */
+/* --- 1. Global Reset & Variables --- */
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap');
 
 :root {
+  /* Colors */
   --neon-purple: #d946ef;
   --neon-blue: #3b82f6;
+  --neon-indigo: #6366f1;
   --deep-space: #020617;
+  --slate-dark: #0f172a;
+  --slate-muted: #1e293b;
+  
+  /* Glassmorphism */
   --glass-bg: rgba(15, 23, 42, 0.65);
   --glass-border: rgba(255, 255, 255, 0.1);
-  --glow-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  --glow-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  
+  /* Layout */
+  --container-max: 1000px;
 }
 
-body {
+* {
+  box-sizing: border-box; /* Critical for preventing input overflow */
+}
+
+html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  min-height: 100vh;
   font-family: 'Inter', sans-serif;
   background-color: var(--deep-space);
   color: #f8fafc;
   overflow-x: hidden;
-  min-height: 100vh;
-  /* Simulating the Black Hole Swirl Background */
   background-image: 
     radial-gradient(circle at 90% 10%, rgba(168, 85, 247, 0.25) 0%, transparent 40%),
     radial-gradient(circle at 10% 90%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
-    url("https://www.transparenttextures.com/patterns/stardust.png"); /* Subtle star texture overlay */
+    url("https://www.transparenttextures.com/patterns/stardust.png");
 }
 
-/* Headings with Neon Glow */
-h2, h3 {
+/* --- 2. Typography --- */
+h1, h2, h3, h4 {
   font-family: 'Rajdhani', sans-serif;
   text-transform: uppercase;
   letter-spacing: 1.5px;
+  margin: 0;
 }
+
+h1 { font-size: 3rem; text-align: center; }
 
 h2 {
   text-shadow: 0 0 10px rgba(217, 70, 239, 0.5);
@@ -41,144 +55,297 @@ h2 {
   -webkit-text-fill-color: transparent;
 }
 
-/* --- 2. The Main Container --- */
+/* --- 3. Layout Components --- */
 .container {
-  max-width: 1000px;
+  max-width: var(--container-max);
   margin: 0 auto;
   padding: 2rem;
-  perspective: 1000px; /* Essential for 3D effects */
 }
 
-/* --- 3. The "Rescue Invention" Upload Card (Glassmorphism) --- */
-.upload-section {
-  /* Overriding inline styles via class priority */
+.hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 3rem 0;
+}
+
+.hero-section p { color: #94a3b8; }
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 5%;
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-text {
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #818cf8;
+}
+
+/* --- 4. Interactive Elements (Buttons) --- */
+.btn-primary, .upload-page-button {
+  background: linear-gradient(135deg, var(--neon-indigo) 0%, #a855f7 100%) !important;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.85rem 1.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+}
+
+.btn-primary:hover:not(:disabled), .upload-page-button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
+}
+
+.btn-primary:disabled, .upload-page-button:disabled {
+  background: #475569 !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.login-trigger-btn {
+  background: var(--neon-indigo);
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 20px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-google {
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(100, 116, 139, 0.5);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-google:hover {
+  border-color: var(--neon-indigo);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+/* --- 5. Upload Section & Input Styling --- */
+.upload-page-upload-section {
   position: relative;
   background: var(--glass-bg) !important;
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border) !important;
   border-radius: 20px !important;
-  padding: 3rem !important;
-  box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.5),
-    inset 0 0 20px rgba(255, 255, 255, 0.05),
-    0 0 30px rgba(168, 85, 247, 0.2); /* Outer purple glow */
+  padding: 2.5rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  margin-bottom: 3rem;
   overflow: hidden;
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
-  animation: float 6s ease-in-out infinite;
 }
 
-/* The neon border line at the top */
-.upload-section::before {
+/* Shining animated border line at the top */
+.upload-page-upload-section::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
+  top: 0; left: 0; width: 100%; height: 2px;
   background: linear-gradient(90deg, transparent, var(--neon-purple), var(--neon-blue), transparent);
+  animation: border-shine 3s linear infinite;
 }
 
-.upload-section:hover {
-  transform: translateY(-5px) scale(1.01);
-  box-shadow: 0 0 50px rgba(168, 85, 247, 0.4);
-}
-
-/* --- 4. Form Elements (Inputs & Textarea) --- */
-textarea, input[type="file"] {
+.upload-page-textarea {
+  width: 100%;
+  height: 180px;
   background: rgba(2, 6, 23, 0.8) !important;
-  border: 1px solid #334155 !important;
-  color: #e2e8f0 !important;
+  border: 1px solid rgba(51, 65, 85, 1) !important;
+  color: #f8fafc !important;
   border-radius: 12px !important;
-  transition: all 0.3s ease;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
   font-family: 'Inter', sans-serif;
-}
-
-textarea:focus {
+  resize: none;
   outline: none;
-  border-color: var(--neon-purple) !important;
-  box-shadow: 0 0 15px rgba(217, 70, 239, 0.2);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: floating-input 6s ease-in-out infinite;
 }
 
-/* --- 5. The Magic Button --- */
-.btn-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
-  box-shadow: 0 10px 20px -10px rgba(168, 85, 247, 0.5);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.btn-primary:hover {
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.7);
+.upload-page-textarea:focus, .upload-page-textarea:hover {
+  border-color: var(--neon-indigo) !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
   transform: translateY(-2px);
 }
 
-.btn-primary:disabled {
-  background: #475569 !important;
-  cursor: not-allowed;
+.upload-page-file-input {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  padding: 10px 0;
 }
 
-/* --- 6. Gallery Cards (Innovation Card) --- */
+.upload-page-file-input::-webkit-file-upload-button {
+  background: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 12px;
+  transition: 0.3s;
+}
+
+/* --- 6. Authentication Modal & Form Spacing --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.auth-card {
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.8) 0%, rgba(25, 25, 112, 0.8) 100%);
+  border: 1px solid rgba(147, 112, 219, 0.5);
+  border-radius: 16px;
+  padding: 3rem; 
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; 
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem; 
+}
+
+.auth-card input {
+  width: 100%;
+  padding: 0.9rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.5);
+  border-radius: 8px;
+  color: white;
+}
+
+.auth-card p span {
+  color: var(--neon-blue);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.auth-card p span:hover { color: var(--neon-purple); }
+
+.close-modal {
+  position: fixed;
+  top: 20px; right: 20px;
+  background: var(--neon-purple);
+  color: white;
+  border: none;
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  font-size: 32px; font-weight: bold;
+  cursor: pointer;
+  z-index: 10001;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* --- 7. Gallery & Innovation Cards --- */
 .innovation-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
+  margin-top: 2rem;
 }
 
-.innovation-card {
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%) !important;
-  border: 1px solid rgba(148, 163, 184, 0.1) !important;
+.innovation-card-wrapper {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
   backdrop-filter: blur(10px);
-  border-radius: 16px !important;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  position: relative;
 }
 
-.innovation-card:hover {
+.innovation-card-wrapper:hover {
   transform: translateY(-10px) rotateX(2deg);
-  border-color: var(--neon-blue) !important;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 0 15px rgba(59, 130, 246, 0.3);
+  border-color: var(--neon-blue);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
 }
 
 .difficulty-badge {
-  background: rgba(15, 23, 42, 0.8) !important;
-  border: 1px solid var(--neon-purple) !important;
-  color: var(--neon-purple) !important;
-  box-shadow: 0 0 5px rgba(217, 70, 239, 0.2);
-}
-
-.product-idea-list li {
-  position: relative;
-  padding-left: 1.5rem;
+  background: var(--slate-muted);
+  color: var(--neon-purple);
+  border: 1px solid var(--neon-purple);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .product-idea-list li::before {
   content: '✦';
   position: absolute;
-  left: 0;
+  left: -1.2rem;
   color: var(--neon-blue);
-  font-size: 0.8rem;
 }
 
-/* --- 7. Animations --- */
+/* --- 8. Animations --- */
+@keyframes border-shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes floating-input {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
-  100% { transform: translateY(0px); }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
-@keyframes pulse-glow {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
+@keyframes modalAppear {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Loading State */
-.loading-text {
-  animation: pulse-glow 1.5s infinite;
-  font-family: 'Rajdhani', sans-serif;
-  letter-spacing: 2px;
+/* --- 9. Profile & Placeholder --- */
+.avatar {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: #4f46e5;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: bold;
+  border: 2px solid #818cf8;
+  cursor: pointer;
+}
+
+.lock-screen {
+  background: var(--slate-dark);
+  border: 1px dashed #334155;
+  padding: 3rem;
+  text-align: center;
+  border-radius: 16px;
+  color: #94a3b8;
 }

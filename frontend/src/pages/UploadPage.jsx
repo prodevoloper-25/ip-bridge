@@ -101,38 +101,31 @@ Instructions:
 };
 
   return (
-    <div className="upload-section" style={{ background: '#1e293b', padding: '2rem', borderRadius: '12px' }}>
-      <h2 style={{ color: 'white' }}>Rescue an Invention</h2>
-      <p style={{ color: '#94a3b8' }}>Paste text OR upload an image/PDF of the patent blueprint.</p>
+    <div className="upload-page-upload-section">
+      <h2 className="upload-page-title">Rescue an Invention</h2>
+      <p className="upload-page-description">Paste text OR upload an image/PDF of the patent blueprint.</p>
       
       <textarea 
-        style={{ 
-          width: '100%', height: '120px', background: '#0f172a', color: 'white', 
-          border: '1px solid #334155', borderRadius: '8px', padding: '1rem', margin: '1rem 0' 
-        }}
+        className="upload-page-textarea"
         placeholder="Paste text here..."
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div className="upload-page-button-container">
         <input 
           type="file" 
           accept="image/*,application/pdf"
           onChange={(e) => setFile(e.target.files[0])}
-          style={{ color: '#94a3b8', fontSize: '0.9rem' }}
+          className="upload-page-file-input"
         />
-        {file && <p style={{ color: '#4ade80', fontSize: '0.8rem' }}>File selected: {file.name}</p>}
+        {file && <p className="upload-page-file-info">File selected: {file.name}</p>}
       </div>
       
       <button 
-        className="btn-primary" 
+        className="upload-page-button" 
         onClick={handleDecode}
         disabled={loading}
-        style={{ 
-          width: '100%', padding: '1rem', background: '#6366f1', color: 'white', 
-          border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' 
-        }}
       >
         {loading ? "AI is Decoding..." : "Transform Patent"}
       </button>
